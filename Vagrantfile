@@ -47,7 +47,7 @@ Vagrant.configure("#{cfg['vagrant']['api_version']}") do |config|
           Array(vm['customize']).each do |custom|
             temp = Array.new
 
-            # iterate through custom array starting at last item and unshift (append as first item) to temp array
+            # loop through custom array starting at last item and unshift (append as first item) to temp array
             custom.reverse.each do |c|
               temp.unshift(c)
             end
@@ -64,7 +64,44 @@ Vagrant.configure("#{cfg['vagrant']['api_version']}") do |config|
       # handle vm network config if specified
       # https://www.vagrantup.com/docs/networking/private_network.html
       Array(vm['network']).each do |net|
-        host.vm.network           net['type'], virtualbox__intnet: net['interface'], auto_config: net['auto_config'], :mac => net['mac']
+        # handle virtualbox provider networking
+        if provider == 'virtualbox'
+          if !net['ip'].nil?
+            # handle dhcp interface
+            if net['ip'] == 'dhcp'
+              host.vm.network     net['type'], virtualbox__intnet: net['interface'], type: net['ip'],
+                                  auto_config: net['auto_config'], :mac => net['mac']
+            # handle static ip interface
+            else
+              addr = String(net['ip']).split('/')[0]
+              mask = String(net['ip']).split('/')[1]
+
+              host.vm.network     net['type'], virtualbox__intnet: net['interface'], ip: addr, netmask: mask,
+                                  auto_config: net['auto_config'], :mac => net['mac']
+            end
+          # handle generic interface
+          else
+            host.vm.network       net['type'], virtualbox__intnet: net['interface'],
+                                  auto_config: net['auto_config'], :mac => net['mac']
+          end
+        # handle non-virtualbox provider networking
+        else
+          if !net['ip'].nil?
+            # handle dhcp interface
+            if net['ip'] == 'dhcp'
+              host.vm.network     net['type'], type: net['ip'], auto_config: net['auto_config'], :mac => net['mac']
+            # handle static ip interface
+            else
+              addr = String(net['ip']).split('/')[0]
+              mask = String(net['ip']).split('/')[1]
+
+              host.vm.network     net['type'], ip: addr, netmask: mask, auto_config: net['auto_config'], :mac => net['mac']
+            end
+          # handle generic interface
+          else
+            host.vm.network       net['type'], auto_config: net['auto_config'], :mac => net['mac']
+          end
+        end
       end
 
       # handle vm synced folders if specified
