@@ -32,16 +32,16 @@ machines:
 
     network:
       - type: private_network
-        interface: net1
+        net: net1
         auto_config: false
         mac: deadbeefcafe
       - type: private_network
-        network: net2
+        net: net2
         ip: dhcp
         auto_config: true
         mac: 00001111222e
       - type: private_network
-        network: net3
+        net: net3
         ip: 192.168.0.10/24
         auto_config: true
         mac: 00000000013f

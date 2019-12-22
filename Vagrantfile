@@ -69,19 +69,19 @@ Vagrant.configure("#{cfg['vagrant']['api_version']}") do |config|
           if !net['ip'].nil?
             # handle dhcp interface
             if net['ip'] == 'dhcp'
-              host.vm.network     net['type'], virtualbox__intnet: net['network'], type: net['ip'],
+              host.vm.network     net['type'], virtualbox__intnet: net['net'], type: net['ip'],
                                   auto_config: net['auto_config'], :mac => net['mac']
             # handle static ip interface
             else
               addr = String(net['ip']).split('/')[0]
               mask = String(net['ip']).split('/')[1]
 
-              host.vm.network     net['type'], virtualbox__intnet: net['network'], ip: addr, netmask: mask,
+              host.vm.network     net['type'], virtualbox__intnet: net['net'], ip: addr, netmask: mask,
                                   auto_config: net['auto_config'], :mac => net['mac']
             end
           # handle generic interface
           else
-            host.vm.network       net['type'], virtualbox__intnet: net['network'],
+            host.vm.network       net['type'], virtualbox__intnet: net['net'],
                                   auto_config: net['auto_config'], :mac => net['mac']
           end
         # handle non-virtualbox provider networking
@@ -89,13 +89,15 @@ Vagrant.configure("#{cfg['vagrant']['api_version']}") do |config|
           if !net['ip'].nil?
             # handle dhcp interface
             if net['ip'] == 'dhcp'
-              host.vm.network     net['type'], type: net['ip'], auto_config: net['auto_config'], :mac => net['mac']
+              host.vm.network     net['type'], type: net['ip'], auto_config: net['auto_config'],
+                                  :mac => net['mac']
             # handle static ip interface
             else
               addr = String(net['ip']).split('/')[0]
               mask = String(net['ip']).split('/')[1]
 
-              host.vm.network     net['type'], ip: addr, netmask: mask, auto_config: net['auto_config'], :mac => net['mac']
+              host.vm.network     net['type'], ip: addr, netmask: mask, auto_config: net['auto_config'],
+                                  :mac => net['mac']
             end
           # handle generic interface
           else
