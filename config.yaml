@@ -1,0 +1,52 @@
+---
+vagrant:
+  api_version: 2
+
+machines:
+  - hostname: test1
+    box: ubuntu/bionic64
+    provider: virtualbox
+    cpus: 4
+    memory: 2048
+    cpuexecutioncap: 60
+
+    forwarded_ports:
+      - guest: 443
+        host: 8443
+
+    synced_folders:
+      - source: salt/roots/
+        destination: /srv/salt/
+
+    salt:
+      version: 2019.2.2
+      install_type: stable
+      python_version: 3
+      minion_config: salt/minion
+      install_master: false
+      masterless: true
+      run_highstate: true
+
+  - hostname: test2
+    box: ubuntu/bionic64
+
+    customize:
+      - - --nicpromisc2
+        - allow-all
+      - - --usb
+        - 'off'
+      - - --audiocontroller
+        - AC97
+      - - --audio
+        - 'Null'
+
+    network:
+      - type: private_network
+        interface: net1
+        auto_config: false
+        mac: deadbeefcafe
+
+    inline: |
+        apt update
+        apt install -y python-pip
+        echo $HOSTNAME > /root/hostname.txt
