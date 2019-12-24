@@ -3,6 +3,30 @@
 # vi: set ft=ruby :
 
 require 'yaml'
+require 'ipaddr'
+
+# extend class IPAddr methods
+# to_cidr_s: returns string address with cidr mask
+# to_mask_s: returns string cidr mask
+class IPAddr
+  def to_cidr_s
+    if @addr
+      mask = @mask_addr.to_s(2).count('1')
+      "#{to_s}/#{mask}"
+    else
+      nil
+    end
+  end
+
+  def to_mask_s
+    if @addr
+      mask = @mask_addr.to_s(2).count('1')
+      "#{mask}"
+    else
+      nil
+    end
+  end
+end
 
 # constants
 DEFAULT_PROVIDER = 'virtualbox'
@@ -65,20 +89,23 @@ Vagrant.configure("#{cfg['vagrant']['api_version']}") do |config|
       # https://www.vagrantup.com/docs/networking/private_network.html
       Array(vm['network']).each do |net|
         # handle virtualbox provider networking
-        if provider == 'virtualbox'
+        case provider
+        when 'virtualbox'
           if !net['ip'].nil?
-            # handle dhcp interface
-            if net['ip'] == 'dhcp'
-              host.vm.network     net['type'], virtualbox__intnet: net['net'], type: net['ip'],
-                                  auto_config: net['auto_config'], :mac => net['mac']
-            # handle static ip interface
-            else
-              addr = String(net['ip']).split('/')[0]
-              mask = String(net['ip']).split('/')[1]
+            begin
+              # handle static ip interface
+              ip = IPAddr.new(net['ip'])
+              addr = ip.to_s
+              mask = ip.to_mask_s
 
               host.vm.network     net['type'], virtualbox__intnet: net['net'], ip: addr, netmask: mask,
                                   auto_config: net['auto_config'], :mac => net['mac']
+            rescue IPAddr::InvalidAddressError
+              # handle dhcp interface
+              host.vm.network     net['type'], virtualbox__intnet: net['net'], type: 'dhcp',
+                                  auto_config: net['auto_config'], :mac => net['mac']
             end
+
           # handle generic interface
           else
             host.vm.network       net['type'], virtualbox__intnet: net['net'],
@@ -87,18 +114,20 @@ Vagrant.configure("#{cfg['vagrant']['api_version']}") do |config|
         # handle non-virtualbox provider networking
         else
           if !net['ip'].nil?
-            # handle dhcp interface
-            if net['ip'] == 'dhcp'
-              host.vm.network     net['type'], type: net['ip'], auto_config: net['auto_config'],
-                                  :mac => net['mac']
-            # handle static ip interface
-            else
-              addr = String(net['ip']).split('/')[0]
-              mask = String(net['ip']).split('/')[1]
+            begin
+              # handle static ip interface
+              ip = IPAddr.new(net['ip'])
+              addr = ip.to_s
+              mask = ip.to_mask_s
 
               host.vm.network     net['type'], ip: addr, netmask: mask, auto_config: net['auto_config'],
                                   :mac => net['mac']
+            rescue IPAddr::InvalidAddressError
+              # handle dhcp interface
+              host.vm.network     net['type'], type: 'dhcp', auto_config: net['auto_config'],
+                                  :mac => net['mac']
             end
+
           # handle generic interface
           else
             host.vm.network       net['type'], auto_config: net['auto_config'], :mac => net['mac']
