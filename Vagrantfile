@@ -5,7 +5,17 @@
 require 'yaml'
 require 'ipaddr'
 
+# default constants
+DEFAULT_PROVIDER = 'virtualbox'
+DEFAULT_CPU = 2
+DEFAULT_MEMORY = 1024
+
+# load yaml config
+current_dir = File.dirname(File.expand_path(__FILE__))
+cfg         = YAML.load_file("#{current_dir}/config.yaml")
+
 # extend class IPAddr methods
+# https://ruby-doc.org/stdlib-2.5.1/libdoc/ipaddr/rdoc/IPAddr.html
 # to_cidr_s: returns string address with cidr mask
 # to_mask_s: returns string cidr mask
 class IPAddr
@@ -27,15 +37,6 @@ class IPAddr
     end
   end
 end
-
-# constants
-DEFAULT_PROVIDER = 'virtualbox'
-DEFAULT_CPU = 2
-DEFAULT_MEMORY = 1024
-
-# load yaml config
-current_dir = File.dirname(File.expand_path(__FILE__))
-cfg         = YAML.load_file("#{current_dir}/config.yaml")
 
 # initialize vagrant
 # https://www.vagrantup.com/docs/
