@@ -6,6 +6,7 @@ require 'yaml'
 require 'ipaddr'
 
 # default constants
+DEFAULT_API_VERSION = 2
 DEFAULT_PROVIDER = 'virtualbox'
 DEFAULT_CPU = 2
 DEFAULT_MEMORY = 1024
@@ -13,6 +14,9 @@ DEFAULT_MEMORY = 1024
 # load yaml config
 current_dir = File.dirname(File.expand_path(__FILE__))
 cfg         = YAML.load_file("#{current_dir}/config.yaml")
+
+# vagrant api version
+api_version = cfg['vagrant']['api_version'] || DEFAULT_API_VERSION
 
 # extend class IPAddr methods
 # https://ruby-doc.org/stdlib-2.5.1/libdoc/ipaddr/rdoc/IPAddr.html
@@ -40,7 +44,7 @@ end
 
 # initialize vagrant
 # https://www.vagrantup.com/docs/
-Vagrant.configure("#{cfg['vagrant']['api_version']}") do |config|
+Vagrant.configure(api_version) do |config|
   # begin loop of each machine in config.yaml
   Array(cfg['machines']).each do |vm|
 
@@ -95,43 +99,41 @@ Vagrant.configure("#{cfg['vagrant']['api_version']}") do |config|
           if !net['ip'].nil?
             begin
               # handle static ip interface
-              ip = IPAddr.new(net['ip'])
-              addr = ip.to_s
-              mask = ip.to_mask_s
+              addr = IPAddr.new(String(net['ip']).split('/')[0])
+              mask = IPAddr.new(net['ip'])
 
-              host.vm.network     net['type'], virtualbox__intnet: net['net'], ip: addr, netmask: mask,
-                                  auto_config: net['auto_config'], :mac => net['mac']
+              host.vm.network     net['type'], virtualbox__intnet: net['net'], ip: addr.to_s, netmask: mask.to_mask_s,
+                                  auto_config: net['auto_config'], mac: net['mac']
             rescue IPAddr::InvalidAddressError
               # handle dhcp interface
               host.vm.network     net['type'], virtualbox__intnet: net['net'], type: 'dhcp',
-                                  auto_config: net['auto_config'], :mac => net['mac']
+                                  auto_config: net['auto_config'], mac: net['mac']
             end
 
           # handle generic interface
           else
             host.vm.network       net['type'], virtualbox__intnet: net['net'],
-                                  auto_config: net['auto_config'], :mac => net['mac']
+                                  auto_config: net['auto_config'], mac: net['mac']
           end
         # handle non-virtualbox provider networking
         else
           if !net['ip'].nil?
             begin
               # handle static ip interface
-              ip = IPAddr.new(net['ip'])
-              addr = ip.to_s
-              mask = ip.to_mask_s
+              addr = IPAddr.new(String(net['ip']).split('/')[0])
+              mask = IPAddr.new(net['ip'])
 
-              host.vm.network     net['type'], ip: addr, netmask: mask, auto_config: net['auto_config'],
-                                  :mac => net['mac']
+              host.vm.network     net['type'], ip: addr.to_s, netmask: mask.to_mask_s, auto_config: net['auto_config'],
+                                  mac: net['mac']
             rescue IPAddr::InvalidAddressError
               # handle dhcp interface
               host.vm.network     net['type'], type: 'dhcp', auto_config: net['auto_config'],
-                                  :mac => net['mac']
+                                  mac: net['mac']
             end
 
           # handle generic interface
           else
-            host.vm.network       net['type'], auto_config: net['auto_config'], :mac => net['mac']
+            host.vm.network       net['type'], auto_config: net['auto_config'], mac: net['mac']
           end
         end
       end
