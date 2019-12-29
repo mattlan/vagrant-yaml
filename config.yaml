@@ -60,3 +60,26 @@ machines:
         apt update
         apt install -y python-pip
         echo $HOSTNAME > /root/hostname.txt
+
+  - hostname: wintest1
+    box: cdaf/WindowsServer
+    guest: windows
+    communicator: winrm
+    memory: 2048
+
+    forwarded_ports:
+      - guest: 3389
+        host: 3389
+
+    customize:
+      - - --vram
+        - 24
+
+    inline: |
+      $ChocoInstallPath = "$env:SystemDrive\ProgramData\Chocolatey\bin"
+      
+      if (!(Test-Path $ChocoInstallPath)) {
+          iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+      }
+      
+      choco install -y googlechrome

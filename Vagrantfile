@@ -55,6 +55,18 @@ Vagrant.configure(api_version) do |config|
       host.vm.box                 = vm['box']
       host.vm.hostname            = vm['hostname']
 
+      # handle vm guest
+      # https://www.vagrantup.com/docs/vagrantfile/machine_settings.html#config-vm-guest
+      if !vm['guest'].nil?
+        host.vm.guest             = :vm['guest']
+      end
+
+      # handle vm communicator
+      # https://www.vagrantup.com/docs/vagrantfile/machine_settings.html#config-vm-communicator
+      if !vm['communicator'].nil?
+        host.vm.communicator      = vm['communicator']
+      end
+
       # handle vm provider config
       # https://www.vagrantup.com/docs/providers/configuration.html
       provider = vm['provider'] || DEFAULT_PROVIDER
@@ -67,7 +79,7 @@ Vagrant.configure(api_version) do |config|
         # handle arbitrary vm cpu execution cap if specified
         # https://www.vagrantup.com/docs/virtualbox/configuration.html
         if !vm['cpuexecutioncap'].nil?
-          v.customize               ['modifyvm', :id, '--cpuexecutioncap', "#{vm['cpuexecutioncap']}"]
+          v.customize             ['modifyvm', :id, '--cpuexecutioncap', "#{vm['cpuexecutioncap']}"]
         end
 
         # handle arbitrary vm custom config if specified
