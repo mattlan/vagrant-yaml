@@ -16,7 +16,11 @@ current_dir = File.dirname(File.expand_path(__FILE__))
 cfg         = YAML.load_file("#{current_dir}/config.yaml")
 
 # vagrant api version
-api_version = cfg['vagrant']['api_version'] || DEFAULT_API_VERSION
+if cfg['vagrant']
+  api_version = cfg['vagrant']['api_version'] || DEFAULT_API_VERSION
+else
+  api_version = DEFAULT_API_VERSION
+end
 
 # extend class IPAddr methods
 # https://ruby-doc.org/stdlib-2.5.1/libdoc/ipaddr/rdoc/IPAddr.html
