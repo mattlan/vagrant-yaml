@@ -8,8 +8,8 @@ require 'ipaddr'
 # default constants
 DEFAULT_API_VERSION = 2
 DEFAULT_PROVIDER = 'virtualbox'
-DEFAULT_CPU = 2
-DEFAULT_MEMORY = 1024
+DEFAULT_CPU = 1
+DEFAULT_MEMORY = 768
 
 # load yaml config
 current_dir = File.dirname(File.expand_path(__FILE__))
