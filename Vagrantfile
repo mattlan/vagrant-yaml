@@ -10,6 +10,7 @@ DEFAULT_API_VERSION = 2
 DEFAULT_PROVIDER = 'virtualbox'
 DEFAULT_CPU = 1
 DEFAULT_MEMORY = 768
+DEFAULT_VBGUEST_AUTO_UPDATE = true
 
 # load yaml config
 current_dir = File.dirname(File.expand_path(__FILE__))
@@ -59,11 +60,11 @@ Vagrant.configure(api_version) do |config|
       host.vm.box                 = vm['box']
       host.vm.hostname            = vm['hostname']
 
-      # handle vbguest auto_update
+      # handle vbguest plugin
       # https://github.com/dotless-de/vagrant-vbguest
       if Vagrant.has_plugin?('vagrant-vbguest')
-        if !vm['auto_update'].nil?
-          host.vbguest.auto_update  = vm['auto_update']
+        if !vm['vbguest'].nil?
+          host.vbguest.auto_update  = vm['vbguest']['auto_update'] || DEFAULT_VBGUEST_AUTO_UPDATE
         end
       end
 
