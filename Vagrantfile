@@ -59,6 +59,14 @@ Vagrant.configure(api_version) do |config|
       host.vm.box                 = vm['box']
       host.vm.hostname            = vm['hostname']
 
+      # handle vbguest auto_update
+      # https://github.com/dotless-de/vagrant-vbguest
+      if Vagrant.has_plugin?('vagrant-vbguest')
+        if !vm['auto_update'].nil?
+          host.vbguest.auto_update  = vm['auto_update']
+        end
+      end
+
       # handle vm guest
       # https://www.vagrantup.com/docs/vagrantfile/machine_settings.html#config-vm-guest
       if !vm['guest'].nil?
@@ -157,7 +165,11 @@ Vagrant.configure(api_version) do |config|
       # handle vm synced folders if specified
       # https://www.vagrantup.com/docs/synced-folders/basic_usage.html
       Array(vm['synced_folders']).each do |folder|
-        host.vm.synced_folder     folder['source'], folder['destination']
+        if !folder['symlink'].nil?
+          host.vm.synced_folder     folder['source'], folder['destination'], SharedFoldersEnableSymlinksCreate: folder['symlink']
+        else
+          host.vm.synced_folder     folder['source'], folder['destination']
+        end
       end
 
       # handle vm forwarded ports if specified
