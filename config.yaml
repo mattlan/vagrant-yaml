@@ -9,6 +9,8 @@ machines:
     cpus: 4
     memory: 2048
     cpuexecutioncap: 60
+    vbguest:
+      auto_update: true
 
     forwarded_ports:
       - guest: 443
