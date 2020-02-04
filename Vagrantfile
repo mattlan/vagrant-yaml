@@ -63,8 +63,12 @@ Vagrant.configure(api_version) do |config|
       # handle vbguest plugin
       # https://github.com/dotless-de/vagrant-vbguest
       if Vagrant.has_plugin?('vagrant-vbguest')
-        if !vm['vbguest'].nil?
-          host.vbguest.auto_update  = vm['vbguest']['auto_update'] || DEFAULT_VBGUEST_AUTO_UPDATE
+        if vm['vbguest']
+          if !vm['vbguest']['auto_update'].nil?
+            host.vbguest.auto_update  = vm['vbguest']['auto_update']
+          else
+            host.vbguest.auto_update  = DEFAULT_VBGUEST_AUTO_UPDATE
+          end
         end
       end
 
